@@ -13,7 +13,6 @@ import pymysql.cursors
 
 seller_id = '700547'  # номер магазина WB, по которому работает парсер
 logfile = open('wb_parser_log.txt', 'a')  # Локальный лог
-# logfile = open('/usr/myScripts/wbparser/wb_parser_log.txt', 'a') #Серверный лог
 cur_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 
