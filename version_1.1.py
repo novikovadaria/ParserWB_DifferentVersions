@@ -30,7 +30,7 @@ def chrome_driver_init():
 
 def DB_connection_init():
 
-    # Данные для подключения к БД
+    # Данные для подключения к БД Новикова Дарья
     db_host = 'localhost'
     db_port = 3306
     db_user = 'root'
@@ -50,8 +50,13 @@ def page_fullloaded_to_text(driver, url):
     # <----- Открываем продавца на первой стр, забираем html код
     driver.get(url=url)
     # Ждем секунду, а потом если не хватило до тех пор, пока не загрузится страница
-    time.sleep(1)
     WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located)
+    time.sleep(1)
+
+    if find_wb_pages_amount(driver.page_source) == 0:
+        logwrite('dop_info', 'На странице не найдено товаров. Код страницы: ' +
+                 '\n' + driver.page_source + '\n')
+
     return driver.page_source
 
 # Формирование списка артикулов на странице из ее html-кода
@@ -84,12 +89,21 @@ def find_wb_price(http_code):
 # Расчет количества страниц товаров в магазине
 
 
-def find_wb_pages_amount(http_code):
+def find_wb_pages_amount(http_code, log_flag=False):
     soup = BeautifulSoup(http_code, 'lxml')
     element = soup.find('div', class_='seller-details__count-products')
     article_amount = int(element.find('span').text)
-    logwrite('dop_info', 'Количество товаров в магазине: ' + str(article_amount))
-    return math.ceil(article_amount / 100)
+    pages_amount = math.ceil(article_amount / 100)
+    if log_flag:
+        logwrite('dop_info', 'Количество товаров в магазине: ' +
+                 str(article_amount))
+        logwrite(
+            'dop_info', 'Количество страниц товаров в магазине: ' + str(pages_amount))
+
+    if article_amount == 0:
+        return 0
+    else:
+        return pages_amount
 
 # Добавление найденных артикулов WB в БД
 
@@ -157,15 +171,12 @@ def main():
         http_code = page_fullloaded_to_text(driver, seller_url + '&page=1')
         logwrite('step_OK', message_text)
 
-        # Определяем сколько страниц товаов в магазине
-        pages_amount = find_wb_pages_amount(http_code)
+        # Определяем сколько страниц товаов в магазине и пишем в лог
+        pages_amount = find_wb_pages_amount(http_code, log_flag=True)
         # Находим на первой странице все артикулы товаров
         art_list = find_wb_articles(http_code)
         # Находим на первой странице все цены товаров
         price_list = find_wb_price(http_code)
-
-        logwrite(
-            'dop_info', 'Количество страниц товаров в магазине: ' + str(pages_amount))
 
         # <----- В цикле достаём все остальные страницы с товаром и дописываем артикулы в общий список артикулов
         for i in range(2, pages_amount+1):  # Для каждой страницы товаров
@@ -181,7 +192,7 @@ def main():
 
             logwrite('step_OK', message_text)
 
-        message_text = f'Загружаем все артикулы и цены в базу данных'
+        message_text = f'Загружаем инфо о наличии и ценах {len(art_list)} товаров в БД'
         logwrite('step_begin', message_text)
 
         art_to_db(art_list, price_list)  # записываем артикулы в БД
