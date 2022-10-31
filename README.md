@@ -10,6 +10,16 @@ _UPD: задача выполнены и парсер готов. Теперь �
 
 _Из данных + райтинг и кол-во отзывов_
 
+_You need to parse the articles of all the seller's products on the WildBerries website and write them to the database.
+
+UPD: the task is completed, the expansion of the Technical task
+
+You need to parse the price and the available sizes, if it's clothes.
+
+UPD: the task is completed and the parser is ready. Now the following is a rewrite of the code, but now parsing will occur through a request and receiving a response in json.
+
+From the data + rating and number of reviews_
+
 
 # Версия 0.1
 
